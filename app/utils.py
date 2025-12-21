@@ -6,6 +6,7 @@ import asyncio
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from loguru import logger
+# 修正导入：直接从 settings 导入，不要加 app. 前缀
 from settings import settings
 
 def timezone_filter(record):
@@ -24,7 +25,7 @@ def patch_aihubmix_bypass():
         # 1. 自动处理 AiHubMix Gemini Native 路径
         orig_init = genai.Client.__init__
         def new_init(self, *args, **kwargs):
-            # 获取 API Key (需配合 settings.py 的 SecretStr 类型)
+            # 兼容处理：无论 Settings 里是 SecretStr 还是 str 都能读取
             if hasattr(settings.GEMINI_API_KEY, 'get_secret_value'):
                 api_key = settings.GEMINI_API_KEY.get_secret_value()
             else:
@@ -96,5 +97,5 @@ def init_log(**sink_channel):
     logger.add(sink=sys.stdout, level=log_level, filter=timezone_filter)
     return logger
 
-# 确保最后一行干净，没有多余字符
+# 确保最后一行只有函数调用，不要有注释
 init_log()
