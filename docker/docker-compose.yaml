@@ -2,67 +2,51 @@ name: epic-awesome-gamer
 
 services:
   epic-awesome-gamer:
-    # 🔴 确保这是您自己的镜像地址
     image: ghcr.io/10000ge10000/epic-awesome-gamer:latest
-    
-    restart: "no"
+    restart: always
     container_name: epic-awesome-gamer
-    
-    # ✅ [核心修改] 使用 environment 替代 env_file
     environment:
+      - TZ=Asia/Shanghai
       # ----------------------------------------
-      # 🔑 核心账号配置 (必填)
+      # 核心账号配置
       # ----------------------------------------
       - EPIC_EMAIL=你的邮箱@example.com
       - EPIC_PASSWORD=你的密码
-      # ⚠️ 注意：Gemini API Key 必须填写
       - GEMINI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxx
 
       # ----------------------------------------
-      # 🤖 AiHubMix / Gemini 配置 (选填)
+      # AiHubMix / Gemini 配置
       # ----------------------------------------
-      # 如果使用官方接口，填 https://generativelanguage.googleapis.com
       - GEMINI_BASE_URL=https://aihubmix.com
-      # 推荐使用 gemini-2.5-pro 以获得更好的识别能力
       - GEMINI_MODEL=gemini-2.5-pro
 
       # ----------------------------------------
-      # ⚙️ 高级运行参数 (保持默认即可)
+      # ⚙️ 运行参数
       # ----------------------------------------
-      # 是否禁用贝塞尔曲线轨迹 (默认 true)
-      - DISABLE_BEZIER_TRAJECTORY=true
+      # 开启内部调度器
+      # 开启后，容器启动后会立即运行一次，然后转入后台等待下一次任务
+      - ENABLE_APSCHEDULER=true
       
-      # 网络较差时可适当调大超时时间 (秒)
+      - DISABLE_BEZIER_TRAJECTORY=true
       - EXECUTION_TIMEOUT=120
       - RESPONSE_TIMEOUT=30
-      
-      # 失败自动重试
       - RETRY_ON_FAILURE=true
-      
-      # 验证码渲染等待时间 (毫秒)
       - WAIT_FOR_CHALLENGE_VIEW_TO_RENDER_MS=1500
-      
-      # 启用约束编码
       - CONSTRAINT_RESPONSE_SCHEMA=true
-      
-      # 指定各类任务使用的 AI 模型 (默认即可)
       - CHALLENGE_CLASSIFIER_MODEL=gemini-2.5-flash
       - IMAGE_CLASSIFIER_MODEL=gemini-2.5-pro
       - SPATIAL_POINT_REASONER_MODEL=gemini-2.5-pro
       - SPATIAL_PATH_REASONER_MODEL=gemini-2.5-pro
-      
-      # 思考预算 (Token)
       - IMAGE_CLASSIFIER_THINKING_BUDGET=970
       - SPATIAL_POINT_THINKING_BUDGET=1387
       - SPATIAL_PATH_THINKING_BUDGET=1652
 
-    # ✅ 数据持久化
+    # 数据持久化
     volumes:
       - "./volumes/:/app/app/volumes/"
 
     entrypoint: [ "/usr/bin/tini", "--" ]
     command: xvfb-run --auto-servernum --server-num=1 --server-args='-screen 0, 1920x1080x24' uv run app/deploy.py
 
-    # 资源限制
     mem_limit: 4g
     shm_size: '2gb'
