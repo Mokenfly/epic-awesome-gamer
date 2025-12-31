@@ -280,7 +280,7 @@ class EpicGames:
         for url in urls:
             await page.goto(url, wait_until="load")
 
-            # 🟢 增加 404 检测 (防止 URL 错误导致假成功)
+            # 🟢 增加 404 检测
             title = await page.title()
             if "404" in title or "Page Not Found" in title:
                 logger.error(f"❌ Invalid URL (404 Page): {url} - Possible Bundle/URL mismatch.")
@@ -312,9 +312,9 @@ class EpicGames:
                 logger.success(f"Already in the library - {url=}")
                 continue
 
-            # 3. 定位核心按钮 (已修复：移除 //aside 限制)
-            # 🟢 修复：Bundle 页面购买按钮不一定在 aside 里，改为全页面寻找
-            purchase_btn = page.locator("//button[@data-testid='purchase-cta-button']")
+            # 3. 定位核心按钮
+            # 🟢 修复 V3：使用 .first 解决 Strict Mode 报错（页面上有2个按钮）
+            purchase_btn = page.locator("//button[@data-testid='purchase-cta-button']").first
             
             try:
                 purchase_status = await purchase_btn.text_content(timeout=5000)
